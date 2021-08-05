@@ -1,0 +1,52 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: <APP_NAME>
+  namespace: <NAMESPACE>
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: <APP_NAME>
+  template:
+    metadata: 
+      name: <APP_NAME>
+      labels:
+        app: <APP_NAME>
+    spec:
+      containers:
+      - name: <APP_NAME>
+        image: <DOCKER_IMAGE_NAME>
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: 128m
+            memory: 256m
+          requests:
+            cpu: 128m
+            memory: 256m
+        env:
+        - name: JAVA_OPTS
+          value: -Xmx256m -Xms256m -XX:+UseParallelOldGC -XX:+UseParallelGC -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintGCDetails
+      imagePullSecrets:
+      - name: docker-imagepull
+      
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: <APP_NAME>
+  namespace: <NAMESPACE>
+spec:
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: <APP_NAME>
